@@ -45,7 +45,7 @@ class PostingView(View):
         data = json.loads(request.body)
         
         if data['text'] =='':
-            return JsonResponse({'message':'WRITE_A_TEXT'})
+            return JsonResponse({'message':'WRITE_A_TEXT'},status=400)
 
         postings = Posting.objects.filter(id=posting_id, user=request.user) 
         if not postings.exists():
@@ -56,3 +56,16 @@ class PostingView(View):
         )
         return JsonResponse({'message':'UPDATE_SUCCESS'},status=200)
     
+    @login_decorator
+    def delete(self,request,posting_id):
+
+        if not Posting.objects.filter(id=posting_id, user = request.user).exists():
+            return JsonResponse({'message':'NOT_FOUND'},status=404)
+
+        posting = Posting.objects.get(id=posting_id, user = request.user)
+        posting.delete()
+
+        return JsonResponse({'message':'DELETE_SUCCESS'},status=200)
+
+
+        
