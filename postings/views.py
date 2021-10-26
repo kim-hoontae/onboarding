@@ -24,7 +24,6 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERORR'},status=400)
     
-    @login_decorator
     def get(self,request,posting_id):
         user = request.user
         postings = Posting.objects.filter(id=posting_id, user=user)
@@ -33,8 +32,27 @@ class PostingView(View):
             return JsonResponse({'message':'NOT_POSTING'},status=400)
 
         results = [{
-            'id'  : posting.id,
-            'text': posting.text
+            'id'     : posting.id,
+            'text'   : posting.text,
+            'created': posting.created_at,
+            'updated': posting.updated_at
             }for posting in postings]
 
         return JsonResponse({'results':results},status=200)
+    
+    @login_decorator
+    def patch(self,request,posting_id):
+        data = json.loads(request.body)
+        
+        if data['text'] =='':
+            return JsonResponse({'message':'WRITE_A_TEXT'})
+
+        postings = Posting.objects.filter(id=posting_id, user=request.user) 
+        if not postings.exists():
+            return JsonResponse({'message':'NOT_POSTING'},status=404)
+
+        Posting.objects.filter(id=posting_id).update(
+            text = data['text']
+        )
+        return JsonResponse({'message':'UPDATE_SUCCESS'},status=200)
+    
