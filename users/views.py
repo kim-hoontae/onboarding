@@ -8,7 +8,6 @@ from my_settings  import SECRET_KEY, algorithm
 
 class SignupView(View):
     def post(self,request):
-        print(request)
         try: 
             data          = json.loads(request.body)
             hash_password = bcrypt.hashpw(data['password'].encode('utf-8'),bcrypt.gensalt()).decode('utf-8')
