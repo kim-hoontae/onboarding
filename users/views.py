@@ -18,21 +18,13 @@ class SignupView(View):
             if not re.search(r'^(?=(.*[A-Za-z]))(?=(.*[0-9]))(?=(.*[@#$%^!&+=.\-_*]))([a-zA-Z0-9@#$%^!&+=*.\-_]){8,}$', data['password']):
                 return JsonResponse({'message':'NOT_PASSWORD_FORMAT'}, status = 400)
 
-            if not re.search(r'^\d{3}-\d{3,4}-\d{4}$',data['phone_number']):
-                return JsonResponse({'message':'INVALID_PHONE_NUMBER'}, status = 400)
-
             if User.objects.filter(email=data['email']).exists(): 
                 return JsonResponse({'message':'INVALID_EMAIL'},status=400)
-
-            if User.objects.filter(phone_number = data['phone_number']).exists(): 
-                return JsonResponse({'message':'INVALID_PHONE_NUMBER'},status=400)
 
             User.objects.create(
                 email        = data['email'],
                 password     = hash_password,
-                name         = data['name'],
-                nickname     = data.get('nickname'),
-                phone_number = data['phone_number']
+                name         = data['name']
             )
             return JsonResponse({'message':'SUCCESS'},status=201)
         except KeyError: 

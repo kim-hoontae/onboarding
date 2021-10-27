@@ -24,7 +24,7 @@ class PostingView(View):
             )
             return JsonResponse({'message':'SUCCESS'},status=201)
         except KeyError:
-            return JsonResponse({'message':'KEY_ERORR'},status=400)
+            return JsonResponse({'message':'KEY_ERROR'},status=400)
     
     def get(self,request,posting_id):
         postings = Posting.objects.filter(id=posting_id)
@@ -37,7 +37,6 @@ class PostingView(View):
             'user_id': posting.user_id,
             'name'   : posting.user.name,
             'text'   : posting.text,
-            'created': posting.created_at,
             }for posting in postings]
 
         return JsonResponse({'results':results},status=200)
@@ -49,9 +48,8 @@ class PostingView(View):
         if data['text'] =='':
             return JsonResponse({'message':'WRITE_A_TEXT'},status=400)
 
-        postings = Posting.objects.filter(id=posting_id, user=request.user) 
-        if not postings.exists():
-            return JsonResponse({'message':'NOT_POSTING'},status=401)
+        if not Posting.objects.filter(id=posting_id, user=request.user).exists():
+            return JsonResponse({'message':'NOT_EXISTS'},status=400)
 
         Posting.objects.filter(id=posting_id).update(
             text = data['text']
@@ -61,13 +59,13 @@ class PostingView(View):
     @login_decorator
     def delete(self,request,posting_id):
 
-        if not Posting.objects.filter(id=posting_id, user = request.user).exists():
-            return JsonResponse({'message':'INVALID_USER'},status=401)
+        if not Posting.objects.filter(id=posting_id, user=request.user).exists():
+            return JsonResponse({'message':'NOT_EXISTS'},status=400)
 
         posting = Posting.objects.get(id=posting_id, user = request.user)
         posting.delete()
 
-        return JsonResponse({'message':'DELETE_SUCCESS'},status=204)
+        return JsonResponse({'message':'DELETE_SUCCESS'},status=200)
 
 class PostsView(View):
     def get(self,request):
